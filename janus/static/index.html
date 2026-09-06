@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Janus. Remembers. Verifies. Continues.</title>
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+<link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<div class="bar">
+  <a class="brand" href="/" aria-label="Janus">
+    <img src="/static/lockup.svg" alt="Janus" />
+  </a>
+  <div class="pill">remembers . verifies . continues</div>
+  <div class="right">
+    <div class="pill" id="pillNet">connecting</div>
+    <div class="pill" id="pillBlock">block .</div>
+    <div class="pill" id="pillMem">sibyl memory</div>
+  </div>
+</div>
+
+<main>
+  <div id="banner" class="banner hidden"></div>
+
+  <!-- Process A -->
+  <section class="setup" id="startPanel">
+    <h2>Process A. Start an ownership transfer.</h2>
+    <p>Janus reads Base, submits transferOwnership, verifies the pending owner, writes a checkpoint to Sibyl memory, then stops. Kill this process afterwards.</p>
+    <div class="row">
+      <button id="btnDeploy">DEPLOY DEMO CONTRACT</button>
+      <span class="muted" id="deployState"></span>
+    </div>
+    <div class="row">
+      <label>contract address
+        <input id="inpContract" placeholder="0x..." spellcheck="false" autocomplete="off" />
+      </label>
+    </div>
+    <div class="row">
+      <button id="btnBegin" class="primary">BEGIN TRANSFER AND CHECKPOINT</button>
+      <span class="muted" id="startStatus"></span>
+    </div>
+  </section>
+
+  <!-- Fresh Process B -->
+  <section class="setup" id="restorePanel">
+    <h2>Fresh process. Restore from Sibyl memory.</h2>
+    <p>Nothing but the operation id crosses the process boundary. Janus rebuilds the execution history from Sibyl, then revalidates against Base before it will act.</p>
+    <div class="row">
+      <label>operations found in Sibyl memory
+        <select id="selOps"><option value="">loading</option></select>
+      </label>
+      <label>or type an operation id
+        <input id="inpOpId" placeholder="op_..." spellcheck="false" autocomplete="off" />
+      </label>
+    </div>
+    <div class="row">
+      <button id="btnLoad" class="primary">RESTORE AND REVALIDATE</button>
+      <button id="btnRefresh">REFRESH LIST</button>
+    </div>
+  </section>
+
+  <!-- Operation view -->
+  <section id="opPanel" class="hidden" style="display:grid;gap:14px">
+    <div class="head">
+      <div>
+        <h1 id="opTitle">ownership transfer</h1>
+        <div class="id" id="opMeta"></div>
+      </div>
+      <div class="id" id="opNote">restored from Sibyl memory . no runtime state carried over</div>
+    </div>
+
+    <div class="split">
+      <div class="pane l">
+        <div class="ph">REMEMBERED STATE</div>
+        <div class="psub">sibyl memory . what happened before</div>
+        <div id="mvSteps"></div>
+        <div style="height:15px"></div>
+        <div class="kv" id="mvKv"></div>
+      </div>
+
+      <div class="bridge" id="bridge" data-state="pending">
+        <div class="lbl">RECONCILE</div>
+        <div class="glyph" id="bridgeGlyph">?</div>
+      </div>
+
+      <div class="pane r">
+        <div class="ph">LIVE BASE STATE</div>
+        <div class="psub">eth_call . what is true now</div>
+        <div class="kv" id="lvKv"></div>
+        <div style="height:15px"></div>
+        <div class="psub">memory is never trusted as current truth. these reads run on every resume, before any signing.</div>
+      </div>
+    </div>
+
+    <div class="verdict" id="verdict" data-state="pending">
+      <div>
+        <div class="t">SIBYL MEMORY &#8596; BASE STATE</div>
+        <div class="v" id="verdictWord">.</div>
+        <p id="verdictMsg"></p>
+        <ul class="reasons hidden" id="verdictReasons"></ul>
+      </div>
+      <div class="cta" id="ctaWrap">
+        <div class="na">
+          <small>NEXT SAFE ACTION</small>
+          <b id="nextAction">.</b>
+        </div>
+        <button id="btnContinue" class="primary">CONTINUE</button>
+      </div>
+    </div>
+
+    <div class="proof">
+      <div class="t">PROOF</div>
+      <div class="tabs">
+        <button class="tablink active" data-tab="txs">BASE TRANSACTIONS</button>
+        <button class="tablink" data-tab="sibyl">SIBYL RECORD</button>
+        <button class="tablink" data-tab="journal">MEMORY JOURNAL</button>
+      </div>
+      <div id="tab-txs">
+        <table id="txTable">
+          <thead><tr><th>STEP</th><th>TRANSACTION</th><th>STATUS</th><th>BLOCK</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="tab-sibyl" class="hidden"><pre id="sibylRaw"></pre></div>
+      <div id="tab-journal" class="hidden"><pre id="journalRaw"></pre></div>
+      <div class="row">
+        <button id="btnBack">BACK</button>
+        <button id="btnDelete">DELETE CHECKPOINT (DELETION TEST)</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

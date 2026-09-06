@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Operations . Janus{% endblock %}
+
+{% block content %}
+<div class="pagehead">
+  <div>
+    <div class="crumb">MISSION CONTROL</div>
+    <h1>Operations</h1>
+  </div>
+  <div class="right"><a class="pill on" href="/operations/new">+ new operation</a></div>
+</div>
+
+<form class="toolbar" method="get" action="/operations">
+  <input class="grow" type="text" name="q" value="{{ q or '' }}" placeholder="search Sibyl memory . operation id, target, contract, step" autocomplete="off" />
+  <button type="submit">SEARCH</button>
+  {% if q %}<a class="pill" href="/operations">clear</a>{% endif %}
+</form>
+
+{% if q %}
+<div class="tagchip ok" style="margin-bottom:14px">search returned {{ ops|length }} result(s) for “{{ q }}”</div>
+{% endif %}
+
+{% if ops %}
+  {% for op in ops %}
+  <a class="opcard" href="/operations/{{ op.operation_id }}">
+    <div>
+      <div class="id">{{ op.operation_id }}</div>
+      <div class="addr">{{ op.contract_address }}</div>
+    </div>
+    <div class="ct">{{ op.current_step_label }}</div>
+    <div>
+      {% if op.current_step == 'completed' %}
+        <span class="state done">DONE</span>
+      {% elif op.failed_steps %}
+        <span class="state mismatch">REFUSED</span>
+      {% elif op.current_step == 'awaiting_acceptance' %}
+        <span class="state wait">PAUSED</span>
+      {% else %}
+        <span class="state wait">{{ op.current_step }}</span>
+      {% endif %}
+    </div>
+    <div class="ct">target {{ op.target_owner[:10] }}…</div>
+    <div class="when">{{ op.updated_at[:16].replace('T', ' ') }}</div>
+    <div class="ct" style="text-align:right">open →</div>
+  </a>
+  {% endfor %}
+{% else %}
+  <div class="empty">No operations match. Start one, or check the memory explorer.</div>
+{% endif %}
+{% endblock %}

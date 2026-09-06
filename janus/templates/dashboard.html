@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Dashboard . Janus{% endblock %}
+
+{% block content %}
+<div class="pagehead">
+  <div>
+    <div class="crumb">MISSION CONTROL</div>
+    <h1>Dashboard</h1>
+  </div>
+  <div class="right">
+    <a class="pill on" href="/operations/new">+ new operation</a>
+  </div>
+</div>
+
+<div class="metrics">
+  <div class="metric">
+    <div class="k">OPERATIONS IN MEMORY</div>
+    <div class="v">{{ ops_count }}</div>
+    <div class="d">checkpoints stored in Sibyl</div>
+  </div>
+  <div class="metric">
+    <div class="k">COMPLETED</div>
+    <div class="v" style="color:var(--cobalt)">{{ done_count }}</div>
+    <div class="d">final state verified onchain</div>
+  </div>
+  <div class="metric">
+    <div class="k">AWAITING CONTINUE</div>
+    <div class="v">{{ wait_count }}</div>
+    <div class="d">paused at a safe boundary</div>
+  </div>
+  <div class="metric">
+    <div class="k">REFUSED OR MISMATCHED</div>
+    <div class="v" style="color:var(--refused)">{{ refuse_count }}</div>
+    <div class="d">chain disagreed, nothing signed</div>
+  </div>
+</div>
+
+<h2 class="ph" style="color:var(--steel);margin:0 0 12px">RECENT OPERATIONS</h2>
+
+{% if recent %}
+  {% for op in recent %}
+  <a class="opcard" href="/operations/{{ op.operation_id }}">
+    <div>
+      <div class="id">{{ op.operation_id }}</div>
+      <div class="addr">{{ op.contract_address }}</div>
+    </div>
+    <div class="ct">{{ op.current_step_label }}</div>
+    <div>
+      {% if op.current_step == 'completed' %}
+        <span class="state done">DONE</span>
+      {% elif op.failed_steps %}
+        <span class="state mismatch">REFUSED</span>
+      {% elif op.current_step == 'awaiting_acceptance' %}
+        <span class="state wait">PAUSED</span>
+      {% else %}
+        <span class="state wait">{{ op.current_step }}</span>
+      {% endif %}
+    </div>
+    <div class="ct">target {{ op.target_owner[:10] }}…</div>
+    <div class="when">{{ op.updated_at[:16].replace('T', ' ') }}</div>
+    <div class="ct" style="text-align:right">open →</div>
+  </a>
+  {% endfor %}
+{% else %}
+  <div class="empty">No operations in Sibyl memory yet. Start one, or restore one in a fresh process.</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}New operation . Janus{% endblock %}
+
+{% block content %}
+<div class="pagehead">
+  <div>
+    <div class="crumb">MISSION CONTROL</div>
+    <h1>New operation</h1>
+  </div>
+</div>
+
+<div class="grid2">
+  <div class="kvblock">
+    <h2>Process A . Start an ownership transfer</h2>
+    <p class="hint">Janus reads Base, submits transferOwnership, verifies the pending owner, writes a checkpoint to Sibyl, then stops so you can kill the process.</p>
+    <div class="rows">
+      <div class="r"><span class="k">deploy</span><span>
+        <form method="post" action="/operations/deploy" style="display:inline">
+          <button type="submit">DEPLOY DEMO CONTRACT</button>
+        </form>
+        {% if contract_address %}
+        <div class="tagchip ok" style="margin-top:8px">{{ contract_address }}</div>
+        {% endif %}
+      </span></div>
+      <div class="r"><span class="k">contract</span><span>
+        <form method="post" action="/operations/begin">
+          <input type="text" name="contract_address" value="{{ contract_address or '' }}" placeholder="0x..." style="margin-bottom:8px" />
+          <input type="text" name="operation_id" value="" placeholder="optional operation id (op_...)" style="margin-bottom:8px" />
+          <button type="submit" class="primary">BEGIN TRANSFER AND CHECKPOINT</button>
+        </form>
+      </span></div>
+    </div>
+  </div>
+
+  <div class="kvblock">
+    <h2>Fresh process B . Restore</h2>
+    <p class="hint">Nothing but the operation id crosses the boundary. Janus rebuilds the history from Sibyl, revalidates against Base, then decides.</p>
+    <div class="rows">
+      <div class="r"><span class="k">restore</span><span>
+        <form method="get" action="/operations/">
+          <input type="text" name="op" placeholder="op_..." style="margin-bottom:8px" />
+          <button type="submit" class="primary">RESTORE AND REVALIDATE</button>
+        </form>
+      </span></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+# Environment and secrets
+.env
+*.env
+!*.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+dist/
+build/
+*.egg-info/
+
+# Runtime state
+janus/data/
+brand/source/
+brand/out/
+brand/geom.html
+brand/mark.html
+brand/ui_*.html
+brand/verify*.html
+brand/post_intro.html
+brand/post_02_log.html
+brand/*_crop.png
+brand/crop_*.png
+
+# OS
+.DS_Store
+Thumbs.db

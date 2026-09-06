@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Memory . Janus{% endblock %}
+
+{% block content %}
+<div class="pagehead">
+  <div>
+    <div class="crumb">MISSION CONTROL</div>
+    <h1>Memory explorer</h1>
+  </div>
+  <div class="right"><span class="tagchip ok">{{ tiers }}</span></div>
+</div>
+
+<form class="toolbar" method="get" action="/memory">
+  <input class="grow" type="text" name="q" value="{{ q or '' }}" placeholder="full text search over Sibyl memory . entities, state, reference, journal" autocomplete="off" />
+  <button type="submit">SEARCH</button>
+  {% if q %}<a class="pill" href="/memory">clear</a>{% endif %}
+</form>
+
+{% if q %}
+<div class="tagchip ok" style="margin-bottom:14px">{{ hits|length }} hit(s) for “{{ q }}” . verdict {{ hit_verdict or 'ok' }}</div>
+{% endif %}
+
+{% if search_rows %}
+<div class="kvblock" style="margin-bottom:16px">
+  <h2>Search results</h2>
+  <div class="rows">
+    {% for row in search_rows %}
+    <div class="r">
+      <span class="k">{{ row.category or row.document_key or 'journal' }}</span>
+      <span class="v">
+        {% if row.name %}<a href="/operations/{{ row.name }}">{{ row.name }}</a>{% else %}{{ row.ts or row.body }}{% endif %}
+      </span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<div class="grid2">
+  <div class="kvblock">
+    <h2>Entities . WARM tier</h2>
+    <p class="hint">each operation checkpoint is one entity. single source of truth.</p>
+    <div class="rows">
+      {% for cp in checkpoints %}
+      <div class="r"><span class="k">{{ cp.operation_id }}</span>
+        <span class="v"><a href="/operations/{{ cp.operation_id }}">{{ cp.current_step }}</a> . {{ cp.contract_address[:14] }}…</span></div>
+      {% else %}
+      <div class="r"><span class="k">entities</span><span class="v">none yet</span></div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="kvblock">
+    <h2>Journal . COLD tier</h2>
+    <p class="hint">append only audit trail written through Sibyl.</p>
+    <div class="rows" style="max-height:420px;overflow:auto">
+      {% for ev in events %}
+      <div class="r" style="grid-template-columns:110px 1fr">
+        <span class="k">{{ ev.ts[:19].replace('T', ' ') }}</span>
+        <span class="v">
+          {% if ev.extra.operation_id %}[{{ ev.extra.operation_id }}] {% endif %}{{ ev.extra.step or ev.extra }}
+        </span>
+      </div>
+      {% else %}
+      <div class="r"><span class="k">journal</span><span class="v">empty</span></div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

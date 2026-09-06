@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{% block title %}Janus{% endblock %}</title>
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+<link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<div class="bar">
+  <a class="brand" href="/" aria-label="Janus">
+    <img src="/static/lockup.svg" alt="Janus" />
+  </a>
+  <div class="right">
+    <div class="pill" id="pillBlock">block .</div>
+    <div class="pill" id="pillMem">sibyl memory</div>
+  </div>
+</div>
+
+<div class="shell">
+  <aside class="rail">
+    <div class="section">JANUS</div>
+    <nav>
+      <a class="item {% if active == 'dashboard' %}active{% endif %}" href="/"><span class="ic">#</span>Dashboard</a>
+      <a class="item {% if active == 'operations' %}active{% endif %}" href="/operations"><span class="ic">%</span>Operations</a>
+      <a class="item {% if active == 'memory' %}active{% endif %}" href="/memory"><span class="ic">@</span>Memory</a>
+      <a class="item {% if active == 'status' %}active{% endif %}" href="/status"><span class="ic">*</span>Status</a>
+    </nav>
+    <div class="section">BUILD</div>
+    <nav>
+      <a class="item" href="/operations/new"><span class="ic">+</span>New operation</a>
+    </nav>
+    <div class="railfoot">
+      restart safe onchain execution<br />
+      sibyl memory . base mainnet
+    </div>
+  </aside>
+
+  <main class="content">
+    {% if banner %}<div class="banner {{ banner.kind }}" id="banner">{{ banner.text }}</div>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+
+<script src="/static/meta.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

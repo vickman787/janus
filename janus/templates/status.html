@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Status . Janus{% endblock %}
+
+{% block content %}
+<div class="pagehead">
+  <div>
+    <div class="crumb">MISSION CONTROL</div>
+    <h1>Status</h1>
+  </div>
+</div>
+
+<div class="metrics">
+  <div class="metric">
+    <div class="k">CHAIN</div>
+    <div class="v" style="color:{% if cfg.chain_id == 8453 %}var(--cobalt){% elif cfg.chain_id is none %}var(--refused){% else %}var(--refused){% endif %}">
+      {% if cfg.chain_id == 8453 %}mainnet{% elif cfg.chain_id is none %}unreachable{% else %}not mainnet{% endif %}
+    </div>
+    <div class="d">chain id {{ cfg.chain_id or '.' }}</div>
+  </div>
+  <div class="metric">
+    <div class="k">LIVE BLOCK</div>
+    <div class="v">{{ cfg.block_number or '.' }}</div>
+    <div class="d">last confirmed block</div>
+  </div>
+  <div class="metric">
+    <div class="k">OPERATIONS</div>
+    <div class="v">{{ ops_count }}</div>
+    <div class="d">in Sibyl memory</div>
+  </div>
+  <div class="metric">
+    <div class="k">MEMORY DB</div>
+    <div class="v" style="font-size:15px">{{ mem_file }}</div>
+    <div class="d">path in memory_db</div>
+  </div>
+</div>
+
+<div class="grid2">
+  <div class="kvblock">
+    <h2>Network guard</h2>
+    <p class="hint">Janus refuses to act on any chain that is not the configured one.</p>
+    <div class="rows">
+      <div class="r"><span class="k">expected chain id</span><span class="v">{{ expected_chain_id }}</span></div>
+      <div class="r"><span class="k">live chain id</span><span class="v">{{ cfg.chain_id or 'unreachable' }}</span></div>
+      <div class="r"><span class="k">mainnet</span><span class="v">{% if cfg.chain_id == 8453 %}yes{% elif cfg.chain_id is none %}unknown{% else %}no. refused{% endif %}</span></div>
+      <div class="r"><span class="k">rpc url</span><span class="v">{{ cfg.rpc_url }}</span></div>
+      <div class="r"><span class="k">explorer</span><span class="v">{{ cfg.explorer_url }}</span></div>
+    </div>
+  </div>
+
+  <div class="kvblock">
+    <h2>Signers</h2>
+    <p class="hint">keys are loaded from the environment only. never stored in Sibyl.</p>
+    <div class="rows">
+      <div class="r"><span class="k">owner key</span><span class="v">{{ 'present' if cfg.has_owner_key else 'missing' }}</span></div>
+      <div class="r"><span class="k">target key</span><span class="v">{{ 'present' if cfg.has_target_key else 'missing' }}</span></div>
+      <div class="r"><span class="k">owner address</span><span class="v">{{ cfg.owner_address or '—' }}</span></div>
+      <div class="r"><span class="k">target address</span><span class="v">{{ cfg.target_address or '—' }}</span></div>
+    </div>
+  </div>
+
+  <div class="kvblock">
+    <h2>Deployed contract</h2>
+    <div class="rows">
+      <div class="r"><span class="k">address</span><span class="v">{{ cfg.contract_address or 'none recorded' }}</span></div>
+    </div>
+  </div>
+
+  <div class="kvblock">
+    <h2>Product</h2>
+    <div class="rows">
+      <div class="r"><span class="k">memory</span><span class="v">sibyl memory . load bearing</span></div>
+      <div class="r"><span class="k">partner stack</span><span class="v">base mainnet</span></div>
+      <div class="r"><span class="k">license</span><span class="v">MIT</span></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

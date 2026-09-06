@@ -1,0 +1,42 @@
+[project]
+name = "janus"
+version = "0.1.0"
+description = "Janus. A restart safe onchain execution agent on Base mainnet with load bearing Sibyl memory."
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.141.1",
+    "jinja2>=3.1.6",
+    "py-solc-x>=2.0.5",
+    "pydantic>=2.13.5",
+    "python-dotenv>=1.2.3",
+    "sibyl-memory-client>=0.8.0",
+    "uvicorn[standard]>=0.52.4",
+    "web3>=8.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "eth-tester>=0.14.0b1",
+    "httpx>=0.28.1",
+    "numpy>=2.5.2",
+    "pillow>=12.3.0",
+    "py-evm>=0.12.1b1",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["janus"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+pythonpath = ["."]
+addopts = "-q"
+
+[project.scripts]
+janus = "janus.cli:main"

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}{{ op.operation_id }} . Janus{% endblock %}
+
+{% block content %}
+<div class="pagehead">
+  <div>
+    <div class="crumb">OPERATIONS</div>
+    <h1 id="opTitle">{{ op.operation_type.replace('_', ' ') }}</h1>
+    <div class="id" style="color:var(--steel);font-size:11.5px" id="opMeta">{{ op.operation_id }} . contract {{ op.contract_address }}</div>
+  </div>
+  <div class="right">
+    <a class="pill" href="/operations">all operations</a>
+    {% if op.current_step == 'completed' %}
+      <span class="state done">DONE</span>
+    {% elif op.failed_steps %}
+      <span class="state mismatch">REFUSED</span>
+    {% else %}
+      <span class="state wait">{{ op.current_step }}</span>
+    {% endif %}
+  </div>
+</div>
+
+{% if op.failed_steps %}
+<div class="banner err" style="margin-bottom:14px">This checkpoint carries refused steps. Review the reason before any manual action.</div>
+{% endif %}
+
+<div class="split" style="margin-bottom:16px">
+  <div class="pane l">
+    <div class="ph">REMEMBERED STATE</div>
+    <div class="psub">sibyl memory . what happened before</div>
+    <div id="mvSteps">
+      {% for s in op.steps %}
+      <div class="line {{ 'done' if s.state == 'done' else ('cur' if s.state == 'current' else 'pend') }}">
+        <span class="m">{{ '[x]' if s.state == 'done' else ('[>]' if s.state == 'current' else '[ ]') }}</span>
+        <span>{{ s.label }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <div style="height:15px"></div>
+    <div class="kv">
+      <div class="r"><span class="k">expects owner</span><span class="v">{{ op.expected_current_owner }}</span><span></span></div>
+      <div class="r"><span class="k">expects pending</span><span class="v">{{ op.target_owner }}</span><span></span></div>
+      <div class="r"><span class="k">chain id</span><span class="v">{{ op.chain_id }}</span><span></span></div>
+      <div class="r"><span class="k">last block</span><span class="v">{{ op.last_verified_block or '.' }}</span><span></span></div>
+    </div>
+  </div>
+
+  <div class="bridge" id="bridge" data-state="{{ verdict.status }}">
+    <div class="lbl">RECONCILE</div>
+    <div class="glyph" id="bridgeGlyph">{{ {'consistent':'=','completed':'=','mismatch':'≠','no_checkpoint':'?'}.get(verdict.status, '?') }}</div>
+  </div>
+
+  <div class="pane r">
+    <div class="ph">LIVE BASE STATE</div>
+    <div class="psub">eth_call . what is true now</div>
+    <div class="kv">
+      <div class="r"><span class="k">owner()</span><span class="v">{{ live.owner }}</span><span></span></div>
+      <div class="r"><span class="k">pendingOwner()</span><span class="v">{{ live.pending_owner }}</span><span></span></div>
+      <div class="r"><span class="k">chainId</span><span class="v">{{ live.chain_id }}</span><span></span></div>
+      <div class="r"><span class="k">codeHash</span><span class="v">{{ (live.runtime_code_hash or '')[:18] }}</span><span></span></div>
+      <div class="r"><span class="k">block</span><span class="v">{{ live.block_number }}</span><span></span></div>
+    </div>
+    <div style="height:15px"></div>
+    <div class="psub">memory is never trusted as current truth. these reads ran on this page load, before anything was signed.</div>
+  </div>
+</div>
+
+<div class="verdict" id="verdict" data-state="{{ verdict.status }}" style="margin-bottom:16px">
+  <div>
+    <div class="t">SIBYL MEMORY ↔ BASE STATE</div>
+    <div class="v">{{ {'consistent':'CONSISTENT','completed':'COMPLETED','mismatch':'MISMATCH','no_checkpoint':'NO CHECKPOINT'}.get(verdict.status, verdict.status|upper) }}</div>
+    <p>{{ verdict.message }}</p>
+    {% if verdict.reasons %}
+    <ul class="reasons">
+      {% for r in verdict.reasons %}<li>{{ r }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+  {% if verdict.next_action == 'acceptOwnership' %}
+  <div class="cta">
+    <div class="na"><small>NEXT SAFE ACTION</small><b>acceptOwnership()</b></div>
+    <form method="post" action="/operations/{{ op.operation_id }}/continue">
+      <button type="submit" class="primary">CONTINUE</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+
+<div class="proof">
+  <div class="t">PROOF</div>
+  <table style="margin-top:10px">
+    <thead><tr><th>STEP</th><th>TRANSACTION</th><th>STATUS</th><th>BLOCK</th></tr></thead>
+    <tbody>
+    {% for tx in op.transaction_hashes %}
+      <tr>
+        <td>{{ tx.step }}</td>
+        <td>{% if tx.url %}<a target="_blank" rel="noopener" href="{{ tx.url }}">{{ tx.tx_hash }}</a>{% else %}{{ tx.tx_hash }}{% endif %}</td>
+        <td class="{{ 'ok' if tx.status == 1 else 'bad' }}">{{ 'ok' if tx.status == 1 else 'FAILED' }}</td>
+        <td>{{ tx.block_number }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="4" class="muted">no transactions recorded</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  {% if op.failed_steps %}
+  <div style="margin-top:16px">
+    <div class="t" style="color:var(--refused)">REFUSED STEPS</div>
+    {% for f in op.failed_steps %}
+      <div class="line" style="color:var(--refused)"><span class="m">[!]</span><span>{{ f.step }} . {{ f.error }}</span></div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="row" style="margin-top:18px">
+    <form method="post" action="/operations/{{ op.operation_id }}/delete" onsubmit="return confirm('Delete this checkpoint from Sibyl memory? This proves the deletion test.')">
+      <button type="submit" style="border-color:rgba(255,90,90,.5);color:var(--refused)">DELETE CHECKPOINT</button>
+    </form>
+    <form method="post" action="/operations/{{ op.operation_id }}/refresh">
+      <button type="submit">REVALIDATE NOW</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
