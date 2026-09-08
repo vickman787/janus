@@ -1,9 +1,9 @@
-# Deploy Janus to a VPS
+﻿# Deploy Janus to a VPS
 
 This guide deploys Janus to a Hetzner Cloud VPS with Ubuntu 24.04, runs it
 under systemd, and exposes it at your domain with Caddy for automatic HTTPS.
 
-Domain: janusapp.xyz (registered through Vercel)
+Domain: YOUR_DOMAIN
 
 Tested state: 25 tests green, mainnet proof live.
 
@@ -176,7 +176,7 @@ sudo nano /etc/caddy/Caddyfile
 Paste:
 
 ```
-janusapp.xyz {
+YOUR_DOMAIN {
     reverse_proxy 127.0.0.1:8000
 }
 ```
@@ -192,13 +192,13 @@ Caddy fetches the certificate from Let's Encrypt automatically and renews it.
 ## 10. Point the domain at the server
 
 The domain was registered through Vercel. In the Vercel domain settings for
-janusapp.xyz, add an A record pointing janusapp.xyz at YOUR_SERVER_IP, and
+YOUR_DOMAIN, add an A record pointing YOUR_DOMAIN at YOUR_SERVER_IP, and
 optionally a CNAME or A record for www if you want the www host.
 
 DNS can take minutes to hours to propagate. Wait, then check:
 
 ```
-dig janusapp.xyz
+dig YOUR_DOMAIN
 ```
 
 ## 11. Verify the whole stack
@@ -206,11 +206,11 @@ dig janusapp.xyz
 From the server:
 
 ```
-curl -s https://janusapp.xyz/api/config
+curl -s https://YOUR_DOMAIN/api/config
 ```
 
 You should see chain id 8453 and mainnet true. Then open
-https://janusapp.xyz in a browser. The dashboard shows the operations present
+https://YOUR_DOMAIN in a browser. The dashboard shows the operations present
 in the server memory db.
 
 The live memory on this fresh server starts empty. To populate it with the
@@ -278,7 +278,7 @@ or Caddy has no cert yet. Check `sudo systemctl status caddy` and run
 `sudo journalctl -u janus -n 50`.
 
 Page loads but shows not mainnet. The .env chain id or rpc url is wrong.
-Check `curl -s https://janusapp.xyz/api/config`.
+Check `curl -s https://YOUR_DOMAIN/api/config`.
 
 Deploy and begin buttons error. The keys are missing or wrong in .env. This
 is expected if you intentionally left keys out for a read only public site.
