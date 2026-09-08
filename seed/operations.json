@@ -1,6 +1,58 @@
 {
   "checkpoints": [
     {
+      "operation_id": "op_demo_video",
+      "operation_type": "ownership_transfer",
+      "contract_address": "0x48Fc1422C1616e19deD482D4e52960a0e9CE997b",
+      "chain_id": 8453,
+      "expected_current_owner": "0x5f11B3a7D14697F55A6c031F7FE4e3a2F56f43e8",
+      "target_owner": "0x6e4147348A00837a02A2461515C43f5Df1bC03dA",
+      "current_step": "completed",
+      "completed_steps": [
+        "initial_state_verified",
+        "transfer_submitted",
+        "pending_owner_verified",
+        "accept_submitted",
+        "owner_verified",
+        "completed"
+      ],
+      "attempted_steps": [
+        "transfer_submitted",
+        "accept_submitted"
+      ],
+      "transaction_hashes": [
+        {
+          "step": "transfer_ownership",
+          "tx_hash": "a7982a6b4f7f011d3eda1b4f6ebbc490db37739583d32da38381f90df071e08e",
+          "status": 1,
+          "block_number": 51036883
+        },
+        {
+          "step": "accept_ownership",
+          "tx_hash": "3fdd4826b2e3b68322c71cb4552a2b7e1c5db8217ccbdf3a593e3809dc87945f",
+          "status": 1,
+          "block_number": 51036909
+        }
+      ],
+      "failed_steps": [
+        {
+          "step": "owner_verified",
+          "error": "final owner is 0x5f11B3a7D14697F55A6c031F7FE4e3a2F56f43e8, expected 0x6e4147348A00837a02A2461515C43f5Df1bC03dA",
+          "ts": "2026-09-08T10:26:04.774975Z"
+        }
+      ],
+      "safety_invariants": {
+        "pending_must_be_zero_on_start": true,
+        "live_code_checked": true,
+        "transfer_complete": true
+      },
+      "last_verified_block": 51036970,
+      "next_expected_step": null,
+      "created_at": "2026-09-08T10:25:05.210816Z",
+      "updated_at": "2026-09-08T10:28:06.863962Z",
+      "timestamps": {}
+    },
+    {
       "operation_id": "op_demo_mismatch",
       "operation_type": "ownership_transfer",
       "contract_address": "0xE8a50d1AaC54f0A83770fc02C583C61715d83775",
@@ -118,6 +170,107 @@
     }
   ],
   "events": [
+    {
+      "id": "f56b72fe-b4c4-4837-b9d1-e7d7370ee106",
+      "ts": "2026-09-08T10:28:06.849Z",
+      "evaluated": {
+        "live": {
+          "contract_address": "0x48Fc1422C1616e19deD482D4e52960a0e9CE997b",
+          "chain_id": 8453,
+          "owner": "0x6e4147348A00837a02A2461515C43f5Df1bC03dA",
+          "pending_owner": "0x0000000000000000000000000000000000000000",
+          "block_number": 51036970,
+          "runtime_code_hash": "43ba8c7d4bad8cc94e841d59c3087a071447e55dfd9324346975348f51b2cb0d"
+        }
+      },
+      "acted": null,
+      "forward": null,
+      "extra": {
+        "operation_id": "op_demo_video",
+        "step": "completed",
+        "note": "completion recorded after reconcile, accept had already landed"
+      }
+    },
+    {
+      "id": "d600ad27-5182-4f22-8cf1-cbd20421382e",
+      "ts": "2026-09-08T10:26:02.021Z",
+      "evaluated": null,
+      "acted": {
+        "tx_hash": "3fdd4826b2e3b68322c71cb4552a2b7e1c5db8217ccbdf3a593e3809dc87945f",
+        "block": 51036909
+      },
+      "forward": null,
+      "extra": {
+        "operation_id": "op_demo_video",
+        "step": "accept_submitted"
+      }
+    },
+    {
+      "id": "4eabe9ad-faa6-46ea-8ba6-e98179d473e5",
+      "ts": "2026-09-08T10:25:13.668Z",
+      "evaluated": {
+        "live": {
+          "contract_address": "0x48Fc1422C1616e19deD482D4e52960a0e9CE997b",
+          "chain_id": 8453,
+          "owner": "0x5f11B3a7D14697F55A6c031F7FE4e3a2F56f43e8",
+          "pending_owner": "0x6e4147348A00837a02A2461515C43f5Df1bC03dA",
+          "block_number": 51036883,
+          "runtime_code_hash": "43ba8c7d4bad8cc94e841d59c3087a071447e55dfd9324346975348f51b2cb0d"
+        }
+      },
+      "acted": null,
+      "forward": null,
+      "extra": {
+        "operation_id": "op_demo_video",
+        "step": "pending_owner_verified"
+      }
+    },
+    {
+      "id": "59a973e3-7cd4-4e99-ab0c-b8356c6b78eb",
+      "ts": "2026-09-08T10:25:10.844Z",
+      "evaluated": null,
+      "acted": {
+        "tx_hash": "a7982a6b4f7f011d3eda1b4f6ebbc490db37739583d32da38381f90df071e08e",
+        "block": 51036883
+      },
+      "forward": null,
+      "extra": {
+        "operation_id": "op_demo_video",
+        "step": "transfer_submitted"
+      }
+    },
+    {
+      "id": "50010140-a4c0-4ff6-8b65-41add36ec25f",
+      "ts": "2026-09-08T10:25:08.179Z",
+      "evaluated": {
+        "live": {
+          "contract_address": "0x48Fc1422C1616e19deD482D4e52960a0e9CE997b",
+          "chain_id": 8453,
+          "owner": "0x5f11B3a7D14697F55A6c031F7FE4e3a2F56f43e8",
+          "pending_owner": "0x0000000000000000000000000000000000000000",
+          "block_number": 51036881,
+          "runtime_code_hash": "43ba8c7d4bad8cc94e841d59c3087a071447e55dfd9324346975348f51b2cb0d"
+        }
+      },
+      "acted": null,
+      "forward": null,
+      "extra": {
+        "operation_id": "op_demo_video",
+        "step": "initial_state_verified"
+      }
+    },
+    {
+      "id": "59ce9547-5273-4c14-a1b6-0beba3faa5ee",
+      "ts": "2026-09-08T10:25:05.420Z",
+      "evaluated": null,
+      "acted": null,
+      "forward": null,
+      "extra": {
+        "operation_id": "op_demo_video",
+        "step": "operation_started",
+        "contract": "0x48Fc1422C1616e19deD482D4e52960a0e9CE997b"
+      }
+    },
     {
       "id": "53443e6d-d9c1-492c-ba1e-45bb3506e45f",
       "ts": "2026-09-05T21:28:44.157Z",
