@@ -22,8 +22,12 @@ from fastapi import FastAPI, Request
 from fastapi.responses import PlainTextResponse
 
 os.environ.setdefault("JANUS_READ_ONLY", "1")
-os.environ.setdefault("JANUS_MEMORY_DB", os.path.join(tempfile.gettempdir(), "janus.db"))
-os.environ.setdefault("JANUS_SEED_FILE", os.path.join(os.getcwd(), "seed", "operations.json"))
+# Force these, do not setdefault: Vercel injects JANUS_MEMORY_DB and friends as
+# empty strings, and an empty value defeats setdefault while also surviving the
+# config loader's blank fallback (which would then pick the read only default
+# home path). The temp dir is the only guaranteed writable location.
+os.environ["JANUS_MEMORY_DB"] = os.path.join(tempfile.gettempdir(), "janus.db")
+os.environ["JANUS_SEED_FILE"] = os.path.join(os.getcwd(), "seed", "operations.json")
 
 
 def _attach_diag(app) -> None:
