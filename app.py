@@ -4,8 +4,11 @@ Vercel's Python runtime imports the `app` object from this file. Read only is
 forced, memory is seeded from the committed snapshot, and the sqlite file lives
 under the writable temp dir for the life of one warm instance.
 
-A diagnostic route and error handlers are attached so that any deployment
-problem prints its cause in the browser instead of an opaque error.
+No `from __future__ import annotations` here on purpose: Vercel runs the
+fallback handler when startup fails, and string annotations break FastAPI's
+parameter resolution (it would treat a `request` param as a query field and
+return 422 instead of the real error). `Request` is imported at module level so
+it always resolves.
 """
 from __future__ import annotations
 
@@ -15,6 +18,9 @@ import sys
 import tempfile
 import traceback
 
+from fastapi import FastAPI, Request
+from fastapi.responses import PlainTextResponse
+
 os.environ.setdefault("JANUS_READ_ONLY", "1")
 os.environ.setdefault("JANUS_MEMORY_DB", os.path.join(tempfile.gettempdir(), "janus.db"))
 os.environ.setdefault("JANUS_SEED_FILE", os.path.join(os.getcwd(), "seed", "operations.json"))
@@ -22,9 +28,7 @@ os.environ.setdefault("JANUS_SEED_FILE", os.path.join(os.getcwd(), "seed", "oper
 
 def _attach_diag(app) -> None:
     import fastapi
-    from fastapi import Request
     from fastapi.exceptions import RequestValidationError
-    from fastapi.responses import PlainTextResponse
 
     @app.get("/__diag", include_in_schema=False)
     async def diag(request: Request):
@@ -65,9 +69,6 @@ def _attach_diag(app) -> None:
 
 
 def _build():
-    from fastapi import FastAPI, Request
-    from fastapi.responses import PlainTextResponse
-
     try:
         from janus.config import Config
         from janus.web import create_app
@@ -78,12 +79,15 @@ def _build():
     except Exception:
         buf = io.StringIO()
         traceback.print_exc(file=buf)
+
+        # Parameterless fallback. If it took a Request arg, FastAPI could 422
+        # before the handler runs and the real startup error would stay hidden.
         diag = FastAPI()
 
         @diag.get("/{path:path}")
         @diag.post("/{path:path}")
         @diag.delete("/{path:path}")
-        async def show_error(request: Request):
+        async def show_error():
             return PlainTextResponse(
                 "Janus startup failed.\n\n" + buf.getvalue(),
                 status_code=500,
