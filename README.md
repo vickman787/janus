@@ -4,6 +4,12 @@ Janus is a restart safe onchain execution agent. It remembers what already happe
 
 Janus runs on Base mainnet. Sibyl Memory is the load bearing memory layer. Live Base state is the source of truth that every continuation is checked against.
 
+## Live app
+
+A read only showcase of the agent runs on Base mainnet at https://janus-pi.vercel.app. It shows real operations, live reconcile reads against the chain, and the refusal behavior. It is read only, so it holds no signing keys and cannot send transactions. The full signing flow runs locally or on a private operator server.
+
+## The demo operation
+
 The demo operation is a two step Ownable2Step ownership transfer:
 
 `transferOwnership(newOwner)` then `pending owner recorded onchain` then interruption then `acceptOwnership()` then `ownership verified`.
