@@ -42,6 +42,8 @@ class Config:
     memory_db: str = DEFAULT_MEMORY_DB
     solc_version: str = DEFAULT_SOLC
     verify_contract_code: bool = True
+    read_only: bool = False
+    seed_file: str = ""
 
     @classmethod
     def from_env(cls) -> "Config":
@@ -55,6 +57,8 @@ class Config:
             memory_db=_env("JANUS_MEMORY_DB", DEFAULT_MEMORY_DB),
             solc_version=_env("JANUS_SOLC_VERSION", DEFAULT_SOLC),
             verify_contract_code=_env("JANUS_VERIFY_CODE", "1") != "0",
+            read_only=_env("JANUS_READ_ONLY", "0") == "1",
+            seed_file=_env("JANUS_SEED_FILE", "seed/operations.json"),
         )
 
     def deployed_contract_path(self) -> Path:

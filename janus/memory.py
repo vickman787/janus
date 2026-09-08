@@ -129,6 +129,30 @@ class SibylStore:
         results = self._client.search_entities(query, limit=limit)
         return [dict(r) for r in results]
 
+    # ------------------------------------------------------------------
+    # Export and seed (used for the read only Vercel deployment)
+    # ------------------------------------------------------------------
+    def export_state(self) -> dict[str, Any]:
+        """Serialise checkpoints and journal for a read only snapshot."""
+        return {
+            "checkpoints": [cp.model_dump() for cp in self.list_checkpoints()],
+            "events": self.read_events(limit=1000),
+        }
+
+    def import_state(self, state: dict[str, Any]) -> int:
+        """Load a snapshot into an empty store. Idempotent by operation id."""
+        count = 0
+        for raw in state.get("checkpoints", []):
+            cp = OperationCheckpoint.model_validate(raw)
+            existing = self.load_checkpoint(cp.operation_id)
+            if existing is None:
+                self.save_checkpoint(cp)
+                count += 1
+        return count
+
+    def is_empty(self) -> bool:
+        return len(self.list_checkpoints()) == 0
+
 
 def store_from_config(config: Config) -> SibylStore:
     return SibylStore(db_path=config.memory_db)

@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from pathlib import Path
 
 from janus.chain import BaseChain
 from janus.config import Config
@@ -100,6 +101,17 @@ def cmd_list(config: Config, args) -> int:
     return 0
 
 
+def cmd_export(config: Config, args) -> int:
+    _, store, _ = _components(config)
+    state = store.export_state()
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(state, indent=2), encoding="utf-8")
+    print(f"exported {len(state['checkpoints'])} checkpoints to {out}")
+    store.close()
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="janus", description="Restart safe onchain execution agent on Base mainnet.")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -129,6 +141,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("list", help="List checkpoints in Sibyl memory.")
     p.set_defaults(fn=cmd_list)
+
+    p = sub.add_parser("export", help="Export checkpoints and journal to a JSON seed.")
+    p.add_argument("--out", default="seed/operations.json", help="output path")
+    p.set_defaults(fn=cmd_export)
 
     return parser
 

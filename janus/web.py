@@ -130,7 +130,22 @@ def _cfg_view(chain: BaseChain, config: Config) -> dict:
 
 
 def _base_ctx(config: Config) -> dict:
-    return {"active": None, "banner": None}
+    return {"active": None, "banner": None, "read_only": config.read_only}
+
+
+def _seed_store(config: Config, store: SibylStore) -> None:
+    """Import a committed snapshot when the store is empty and a seed exists.
+
+    Used by the read only Vercel deployment, where the filesystem is ephemeral
+    and cannot carry a persistent SQLite file. The seed ships real checkpoints
+    taken from the operator machine; live state is still read fresh from Base.
+    """
+    if config.read_only and store.is_empty() and config.seed_file:
+        path = Path(config.seed_file)
+        if path.exists():
+            state = json.loads(path.read_text(encoding="utf-8"))
+            imported = store.import_state(state)
+            log.info("seeded %s checkpoints from %s", imported, path)
 
 
 def _status_badge(cp_view: dict) -> str:
@@ -154,6 +169,7 @@ def create_app(
         config = Config.from_env()
     chain = chain if chain is not None else BaseChain.from_config(config)
     store = store if store is not None else SibylStore(db_path=config.memory_db)
+    _seed_store(config, store)
     executor = JanusExecutor(chain, store, config)
 
     app = FastAPI(title="Janus")
@@ -231,6 +247,8 @@ def create_app(
 
     @app.post("/operations/deploy")
     def page_deploy(request: Request):
+        if config.read_only:
+            return RedirectResponse("/operations/new?error=read+only+deployment.+no+signing+keys.", status_code=303)
         try:
             result = _deploy(chain, config)
         except Exception as exc:
@@ -239,6 +257,8 @@ def create_app(
 
     @app.post("/operations/begin")
     def page_begin(request: Request, contract_address: str = "", operation_id: str = ""):
+        if config.read_only:
+            return RedirectResponse("/operations/new?error=read+only+deployment.+no+signing+keys.", status_code=303)
         contract = contract_address.strip() or _contract_address(config) or None
         try:
             cp = executor.begin_ownership_transfer(
@@ -294,6 +314,8 @@ def create_app(
 
     @app.post("/operations/{operation_id}/continue")
     def page_continue(request: Request, operation_id: str):
+        if config.read_only:
+            return RedirectResponse(f"/operations/{operation_id}?error=read+only+deployment.+no+signing+keys.", status_code=303)
         try:
             result = executor.resume(operation_id, execute=True)
             if result.verdict.status in (VerdictStatus.MISMATCH, VerdictStatus.NO_CHECKPOINT):
@@ -363,6 +385,8 @@ def create_app(
 
     @app.post("/api/deploy")
     def api_deploy(body: DeployBody):
+        if config.read_only:
+            raise HTTPException(403, "read only deployment. no signing keys.")
         try:
             return _deploy(chain, config, body.initial_owner)
         except HTTPException:
@@ -372,6 +396,8 @@ def create_app(
 
     @app.post("/api/operations")
     def api_begin(body: BeginBody):
+        if config.read_only:
+            raise HTTPException(403, "read only deployment. no signing keys.")
         try:
             cp = executor.begin_ownership_transfer(
                 contract_address=_contract_address(config, body.contract_address) or None,
@@ -400,6 +426,8 @@ def create_app(
 
     @app.post("/api/operations/{operation_id}/continue")
     def api_continue(operation_id: str, body: ResumeBody):
+        if config.read_only:
+            raise HTTPException(403, "read only deployment. no signing keys.")
         result = executor.resume(operation_id, execute=body.execute)
         if result.verdict.status in (VerdictStatus.MISMATCH, VerdictStatus.NO_CHECKPOINT):
             raise HTTPException(409, result.verdict.message)
@@ -407,6 +435,8 @@ def create_app(
 
     @app.delete("/api/operations/{operation_id}")
     def api_delete(operation_id: str):
+        if config.read_only:
+            raise HTTPException(403, "read only deployment. no signing keys.")
         removed = store.delete_checkpoint(operation_id)
         if not removed:
             raise HTTPException(404, "operation not found in Sibyl memory")
