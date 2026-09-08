@@ -5,6 +5,7 @@ hosted link.
 """
 from __future__ import annotations
 
+import importlib.util
 import os
 import shutil
 import socket
@@ -15,8 +16,6 @@ from pathlib import Path
 
 import uvicorn
 
-from api.index import app as vercel_app
-
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "brand" / "out"
 CHROME_CANDIDATES = [
@@ -25,6 +24,14 @@ CHROME_CANDIDATES = [
     r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
     r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
 ]
+
+
+def load_app():
+    """Load the Vercel entrypoint exactly as Vercel imports it."""
+    spec = importlib.util.spec_from_file_location("vercel_app", ROOT / "app.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.app
 
 
 def find_browser() -> str:
@@ -73,12 +80,8 @@ def main() -> int:
     for ext in ("", "-wal", "-shm"):
         Path(os.environ["JANUS_MEMORY_DB"] + ext).unlink(missing_ok=True)
 
-    # fresh app import so env is read at create_app time
-    import importlib
-    import api.index as idx
-
-    importlib.reload(idx)
-    app = vercel_app if not hasattr(idx, "app") else idx.app
+    # fresh app load so env is read at create_app time
+    app = load_app()
 
     port = free_port()
     server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="error"))
