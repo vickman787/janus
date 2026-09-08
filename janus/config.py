@@ -21,7 +21,10 @@ ARTIFACT_PATH = Path(__file__).resolve().parent / "artifacts" / "Ownable2Step.js
 
 
 def _env(name: str, default: str) -> str:
-    return os.environ.get(name, default).strip()
+    value = os.environ.get(name)
+    if value is None or not value.strip():
+        return default
+    return value.strip()
 
 
 def _env_optional(name: str) -> str | None:
