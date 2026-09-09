@@ -105,6 +105,43 @@ def test_completed_checkpoint_reconciles(chain_env, deployed):
     assert check.verdict.status == VerdictStatus.COMPLETED
 
 
+def test_stale_refusal_cleared_on_reconcile_completion(chain_env, deployed):
+    """The crash recovery case. The accept lands, but the process dies before
+    the final read, leaving a stale failed owner_verified step. A later resume
+    must record completion and clear the stale refusal, not read as refused."""
+    from janus.models import FailedStep, Step
+
+    executor = chain_env["executor"]
+    target = chain_env["target"]
+    cp = _begin(chain_env, deployed)
+
+    # Simulate the crash window: the accept landed onchain, then the process
+    # died before verification, writing a stale failed step from a lagging read.
+    from janus.executor import utc_now
+
+    chain = chain_env["chain"]
+    chain.accept_ownership(deployed, target.key.hex())
+
+    cp.completed_steps.append(Step.ACCEPT_SUBMITTED.value)
+    cp.current_step = Step.ACCEPT_SUBMITTED.value
+    cp.failed_steps.append(
+        FailedStep(
+            step=Step.OWNER_VERIFIED.value,
+            error=f"final owner is {chain_env['owner'].address}, expected {target.address}",
+            ts=utc_now(),
+        )
+    )
+    chain_env["store"].save_checkpoint(cp)
+
+    result = executor.resume(cp.operation_id)
+    assert result.verdict.status == VerdictStatus.COMPLETED
+
+    final_cp = chain_env["store"].load_checkpoint(cp.operation_id)
+    assert final_cp.current_step == "completed"
+    assert "completed" in final_cp.completed_steps
+    assert final_cp.failed_steps == []
+
+
 def test_begin_refuses_when_owner_is_wrong(chain_env, deployed):
     chain = chain_env["chain"]
     stranger = chain_env["stranger"]

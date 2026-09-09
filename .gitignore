@@ -25,6 +25,9 @@ brand/post_02_log.html
 brand/*_crop.png
 brand/crop_*.png
 
+# Video scratch and source recordings
+video/
+
 # OS
 .DS_Store
 Thumbs.db

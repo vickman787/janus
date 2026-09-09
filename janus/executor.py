@@ -193,6 +193,9 @@ class JanusExecutor:
             checkpoint.last_verified_block = live.block_number
             checkpoint.next_expected_step = None
             checkpoint.safety_invariants["transfer_complete"] = True
+            # The stale refusal from the crash window is superseded by the
+            # verified completion. Clear it so the operation reads as done.
+            checkpoint.failed_steps = []
             self.store.log_event(
                 operation_id,
                 Step.COMPLETED.value,
@@ -318,10 +321,14 @@ class JanusExecutor:
             self.store.save_checkpoint(checkpoint)
             raise RuntimeError(f"final owner verification failed, owner is {live2.owner}")
         checkpoint.completed_steps.append(Step.OWNER_VERIFIED.value)
+        checkpoint.completed_steps.append(Step.COMPLETED.value)
         checkpoint.current_step = Step.COMPLETED.value
         checkpoint.last_verified_block = live2.block_number
         checkpoint.next_expected_step = None
         checkpoint.safety_invariants["transfer_complete"] = True
+        # A completed transfer supersedes any earlier stale refusal. Clear the
+        # failed steps so the operation reads as done, not done and refused.
+        checkpoint.failed_steps = []
         self.store.log_event(
             checkpoint.operation_id,
             Step.COMPLETED.value,
