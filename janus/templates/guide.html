@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Guide . Janus{% endblock %}
+
+{% block content %}
+<div class="pagehead">
+  <div>
+    <div class="crumb">MISSION CONTROL</div>
+    <h1>Guide</h1>
+  </div>
+  <div class="right"><span class="tagchip ok">read only showcase</span></div>
+</div>
+
+<div class="grid2">
+  <div class="kvblock">
+    <h2>What Janus is</h2>
+    <p class="hint">A restart safe onchain execution agent.</p>
+    <div class="rows">
+      <div class="r"><span class="k">problem</span><span class="v">An agent running a multi step onchain operation can crash mid way. Memory can be stale. The chain may have moved. Guessing is dangerous.</span></div>
+      <div class="r"><span class="k">answer</span><span class="v">Remember what happened in Sibyl Memory. Revalidate against Base mainnet before every step. Act only when the two agree.</span></div>
+      <div class="r"><span class="k">rule</span><span class="v">Sibyl tells Janus what happened before. Base tells Janus what is true now.</span></div>
+    </div>
+  </div>
+
+  <div class="kvblock">
+    <h2>How to read a cockpit</h2>
+    <p class="hint">Open any operation from the Operations page.</p>
+    <div class="rows">
+      <div class="r"><span class="k">left pane</span><span class="v">Remembered state. What Sibyl Memory persisted before the process ended.</span></div>
+      <div class="r"><span class="k">right pane</span><span class="v">Live Base state. owner() and pendingOwner() read fresh from the chain on this page load.</span></div>
+      <div class="r"><span class="k">the bridge</span><span class="v">= memory and chain agree. not equals they disagree. question mark no checkpoint to compare.</span></div>
+      <div class="r"><span class="k">revalidate</span><span class="v">Reads the chain again and recomputes the verdict. Nothing is signed on this read only instance.</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="kvblock" style="margin-top:16px">
+  <h2>Watch the demo</h2>
+  <p class="hint">The full cold start: transfer, checkpoint, process death, fresh process restore, revalidate, accept, verify.</p>
+  <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px;border:1px solid var(--line)">
+    <iframe src="https://www.youtube.com/embed/PAOkQ27o688" title="Janus demo" loading="lazy"
+      style="position:absolute;top:0;left:0;width:100%;height:100%;border:0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+  </div>
+</div>
+
+<div class="grid2" style="margin-top:16px">
+  <div class="kvblock">
+    <h2>The two step operation</h2>
+    <p class="hint">A minimal Ownable2Step ownership transfer.</p>
+    <div class="rows">
+      <div class="r"><span class="k">step one</span><span class="v">transferOwnership(newOwner). The pending owner is recorded onchain.</span></div>
+      <div class="r"><span class="k">the gap</span><span class="v">The process dies here. Nothing in memory survives except the Sibyl checkpoint.</span></div>
+      <div class="r"><span class="k">step two</span><span class="v">acceptOwnership(). The new owner accepts and the final owner is verified.</span></div>
+    </div>
+  </div>
+
+  <div class="kvblock">
+    <h2>Why memory is load bearing</h2>
+    <p class="hint">The deletion test.</p>
+    <div class="rows">
+      <div class="r"><span class="k">with memory</span><span class="v">A fresh process restores the operation by id, reconciles, and continues safely.</span></div>
+      <div class="r"><span class="k">without memory</span><span class="v">Janus can still read the chain, but it has lost the operation identity, the target, the completed steps, and the invariants. It refuses.</span></div>
+      <div class="r"><span class="k">result</span><span class="v">NO EXECUTION CHECKPOINT FOUND. AUTOMATIC RESUME REFUSED.</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="kvblock" style="margin-top:16px">
+  <h2>The three verdicts</h2>
+  <div class="rows">
+    <div class="r"><span class="k">consistent</span><span class="v">Live state matches the checkpoint. Exactly one continuation is safe.</span></div>
+    <div class="r"><span class="k">mismatch</span><span class="v">The chain moved while the agent was offline. Janus refuses and names the broken invariant. See op_demo_mismatch.</span></div>
+    <div class="r"><span class="k">no checkpoint</span><span class="v">Sibyl holds no record for the operation. Automatic resume is refused.</span></div>
+  </div>
+</div>
+
+<div class="kvblock" style="margin-top:16px">
+  <h2>About this instance</h2>
+  <div class="rows">
+    <div class="r"><span class="k">mode</span><span class="v">Read only. No signing keys are present, so deploy and continue are disabled here.</span></div>
+    <div class="r"><span class="k">the real flow</span><span class="v">Signing runs locally or on a private operator server, as shown in the demo video.</span></div>
+    <div class="r"><span class="k">memory</span><span class="v">Sibyl Memory. entities for checkpoints, a journal for the audit trail, full text search over the store.</span></div>
+    <div class="r"><span class="k">network</span><span class="v">Base mainnet, chain id 8453.</span></div>
+  </div>
+</div>
+{% endblock %}

@@ -374,6 +374,11 @@ def create_app(
         ctx["ops_count"] = len(store.list_checkpoints())
         return render(request, "status.html", ctx, "status")
 
+    @app.get("/guide", response_class=HTMLResponse)
+    def page_guide(request: Request):
+        ctx = _base_ctx(config)
+        return render(request, "guide.html", ctx, "guide")
+
     @app.get("/favicon.ico", include_in_schema=False)
     def favicon():
         return FileResponse(STATIC_DIR / "favicon.svg", media_type="image/svg+xml")
