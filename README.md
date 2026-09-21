@@ -8,6 +8,10 @@ Janus runs on Base mainnet. Sibyl Memory is the load bearing memory layer. Live 
 
 A read only showcase of the agent runs on Base mainnet at https://janus-pi.vercel.app. It shows real operations, live reconcile reads against the chain, and the refusal behavior. It is read only, so it holds no signing keys and cannot send transactions. The full signing flow runs locally or on a private operator server.
 
+## Payout address (USDC on Base)
+
+`0x3D58E7ffeAF5aF140C7DA5AaFA650BAb7B4Ed880`
+
 ## The demo operation
 
 The demo operation is a two step Ownable2Step ownership transfer:
